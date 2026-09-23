@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>خضّرها 🇸🇦</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f8f5;
+            color: #123524;
+            min-height: 100vh;
+        }
+
+        header {
+            text-align: center;
+            padding: 45px 20px 25px;
+        }
+
+        header h1 {
+            font-size: 42px;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            color: #557061;
+            font-size: 17px;
+        }
+
+        .container {
+            width: min(900px, 92%);
+            margin: auto;
+        }
+
+        .upload-box {
+            border: 2px dashed #16834b;
+            background: white;
+            border-radius: 24px;
+            padding: 45px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .upload-box:hover {
+            background: #eef8f1;
+            transform: translateY(-2px);
+        }
+
+        .upload-icon {
+            font-size: 50px;
+            margin-bottom: 15px;
+        }
+
+        .upload-box h2 {
+            margin-bottom: 8px;
+        }
+
+        .upload-box p {
+            color: #6c7d72;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .editor {
+            display: none;
+            margin-top: 30px;
+            background: white;
+            padding: 25px;
+            border-radius: 24px;
+            box-shadow: 0 10px 35px rgba(0,0,0,0.07);
+        }
+
+        .preview-area {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 25px;
+        }
+
+        canvas {
+            width: min(360px, 80vw);
+            height: min(360px, 80vw);
+            border-radius: 50%;
+            object-fit: cover;
+            border: 8px solid #16834b;
+            background: #eee;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .filter-btn {
+            border: none;
+            background: #edf4ef;
+            color: #145c37;
+            padding: 12px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 15px;
+            transition: 0.2s;
+        }
+
+        .filter-btn:hover {
+            background: #dceee3;
+        }
+
+        .filter-btn.active {
+            background: #16834b;
+            color: white;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .download-btn,
+        .reset-btn {
+            border: none;
+            padding: 14px 25px;
+            border-radius: 13px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .download-btn {
+            background: #16834b;
+            color: white;
+        }
+
+        .download-btn:hover {
+            background: #106b3c;
+        }
+
+        .reset-btn {
+            background: #eee;
+            color: #333;
+        }
+
+        .hint {
+            text-align: center;
+            color: #718078;
+            font-size: 13px;
+            margin-top: 18px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 35px 20px;
+            color: #708077;
+            font-size: 14px;
+        }
+
+        @media (max-width: 500px) {
+            header h1 {
+                font-size: 34px;
+            }
+
+            .upload-box {
+                padding: 35px 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>خضّرها 🇸🇦</h1>
+    <p>خلّ صورتك خضراء بمناسبة اليوم الوطني 💚</p>
+</header>
+
+<main class="container">
+
+    <!-- Upload -->
+    <label class="upload-box" for="fileInput">
+
+        <div class="upload-icon">📸</div>
+<h2>ارفع صورتك</h2>
+
+        <p>
+            اضغط هنا لاختيار صورة من جهازك
+        </p>
+
+        <input
+            type="file"
+            id="fileInput"
+            accept="image/*"
+        >
+
+    </label>
+
+
+    <!-- Editor -->
+    <section class="editor" id="editor">
+
+        <div class="preview-area">
+
+            <canvas
+                id="canvas"
+                width="800"
+                height="800">
+            </canvas>
+
+        </div>
+
+
+        <!-- Filters -->
+        <div class="controls">
+
+            <button
+                class="filter-btn active"
+                data-filter="normal">
+                طبيعي
+            </button>
+
+            <button
+                class="filter-btn"
+                data-filter="green">
+                أخضر 🇸🇦
+            </button>
+
+            <button
+                class="filter-btn"
+                data-filter="darkgreen">
+                أخضر داكن
+            </button>
+
+            <button
+                class="filter-btn"
+                data-filter="softgreen">
+                أخضر ناعم
+            </button>
+
+        </div>
+
+
+        <!-- Actions -->
+        <div class="actions">
+
+            <button
+                class="download-btn"
+                id="downloadBtn">
+                تحميل الصورة 🇸🇦
+            </button>
+
+            <button
+                class="reset-btn"
+                id="resetBtn">
+                اختيار صورة ثانية
+            </button>
+
+        </div>
+
+        <p class="hint">
+            صورتك تتم معالجتها داخل جهازك ولا يتم رفعها إلى أي خادم.
+        </p>
+
+    </section>
+
+</main>
+
+
+<footer>
+    صُنع بحب بمناسبة اليوم الوطني السعودي 🇸🇦💚
+</footer>
+
+
+<script>
+
+    const fileInput = document.getElementById("fileInput");
+
+    const canvas = document.getElementById("canvas");
+
+    const ctx = canvas.getContext("2d");
+
+    const editor = document.getElementById("editor");
+
+    const downloadBtn = document.getElementById("downloadBtn");
+
+    const resetBtn = document.getElementById("resetBtn");
+
+    const filterButtons =
+        document.querySelectorAll(".filter-btn");
+
+
+    let originalImage = null;
+
+    let currentFilter = "normal";
+
+
+    // ==========================
+    // اختيار الصورة
+    // ==========================
+
+    fileInput.addEventListener("change", function () {
+
+        const file = this.files[0];
+
+        if (!file) return;
+
+        if (!file.type.startsWith("image/")) {
+
+            alert("اختاري صورة فقط 📸");
+
+            return;
+        }
+
+
+        const reader = new FileReader();
+
+
+        reader.onload = function (event) {
+
+            const img = new Image();
+
+
+            img.onload = function () {
+
+                originalImage = img;
+
+                editor.style.display = "block";
+
+                drawImage();
+
+                editor.scrollIntoView({
+                    behavior: "smooth"
+                });
+
+            };
+
+
+            img.src = event.target.result;
+
+        };
+
+
+        reader.readAsDataURL(file);
+
+    });
+
+
+    // ==========================
+    // رسم الصورة
+    // ==========================
+
+    function drawImage() {
+
+        if (!originalImage) return;
+
+
+        const size =
+            Math.min(
+                originalImage.width,
+                originalImage.height
+            );
+
+
+        const sx =
+            (originalImage.width - size) / 2;
+
+        const sy =
+            (originalImage.height - size) / 2;
+
+
+        ctx.clearRect(
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
+
+
+        ctx.drawImage(
+            originalImage,
+            sx,
+            sy,
+            size,
+            size,
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
+
+
+        // الحصول على بيانات الصورة
+        let imageData =
+            ctx.getImageData(
+                0,
+                0,
+                canvas.width,
+                canvas.height
+            );
+
+
+        let pixels = imageData.data;
+
+
+        // تطبيق الفلتر
+        for (
+            let i = 0;
+            i < pixels.length;
+i += 4
+        ) {
+
+            let r = pixels[i];
+
+            let g = pixels[i + 1];
+
+            let b = pixels[i + 2];
+
+
+            if (currentFilter === "green") {
+
+                pixels[i] =
+                    r * 0.35;
+
+                pixels[i + 1] =
+                    g * 0.95 + 20;
+
+                pixels[i + 2] =
+                    b * 0.45;
+
+            }
+
+
+            else if (currentFilter === "darkgreen") {
+
+                pixels[i] =
+                    r * 0.18;
+
+                pixels[i + 1] =
+                    g * 0.75;
+
+                pixels[i + 2] =
+                    b * 0.25;
+
+            }
+
+
+            else if (currentFilter === "softgreen") {
+
+                pixels[i] =
+                    r * 0.55;
+
+                pixels[i + 1] =
+                    g * 0.9 + 10;
+
+                pixels[i + 2] =
+                    b * 0.65;
+
+            }
+
+        }
+
+
+        ctx.putImageData(
+            imageData,
+            0,
+            0
+        );
+
+    }
+
+
+    // ==========================
+    // تغيير الفلتر
+    // ==========================
+
+    filterButtons.forEach(button => {
+
+        button.addEventListener("click", function () {
+
+            filterButtons.forEach(btn =>
+                btn.classList.remove("active")
+            );
+
+
+            this.classList.add("active");
+
+
+            currentFilter =
+                this.dataset.filter;
+
+
+            drawImage();
+
+        });
+
+    });
+
+
+    // ==========================
+    // تحميل الصورة
+    // ==========================
+
+    downloadBtn.addEventListener("click", function () {
+
+        if (!originalImage) return;
+
+
+        const link =
+            document.createElement("a");
+
+
+        link.download =
+            "green-profile-saudi-national-day.png";
+
+
+        link.href =
+            canvas.toDataURL("image/png");
+
+
+        link.click();
+
+    });
+
+
+    // ==========================
+    // إعادة التعيين
+    // ==========================
+
+    resetBtn.addEventListener("click", function () {
+
+        originalImage = null;
+
+        fileInput.value = "";
+
+        editor.style.display = "none";
+
+        currentFilter = "normal";
+
+
+        filterButtons.forEach(btn =>
+            btn.classList.remove("active")
+        );
+
+
+        filterButtons[0].classList.add("active");
+
+    });
+
+</script>
+
+</body>
+</html>
