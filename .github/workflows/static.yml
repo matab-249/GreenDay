@@ -1,43 +1,273 @@
-# Simple workflow for deploying static content to GitHub Pages
-name: Deploy static content to Pages
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>خضّرها 🇸🇦</title>
 
-on:
-  # Runs on pushes targeting the default branch
-  push:
-    branches: ["main"]
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, sans-serif; background: #f4f8f5; color: #123524; min-height: 100vh; }
+        header { text-align: center; padding: 45px 20px 25px; }
+        header h1 { font-size: 42px; margin-bottom: 10px; }
+        header p { color: #557061; font-size: 17px; }
+        .container { width: min(900px, 92%); margin: auto; }
 
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
+        .landing {
+            background: white; padding: 30px; border-radius: 24px;
+            box-shadow: 0 10px 35px rgba(0,0,0,0.07);
+            text-align: center; margin-bottom: 25px;
+        }
+        .landing h2 { margin-bottom: 10px; font-size: 26px; }
+        .landing p { color: #6c7d72; margin-bottom: 20px; }
+        .start-btn {
+            background: #16834b; color: white; padding: 14px 25px;
+            border-radius: 13px; border: none; cursor: pointer; font-size: 17px;
+        }
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
-permissions:
-  contents: read
-  pages: write
-  id-token: write
+        .upload-box {
+            border: 2px dashed #16834b; background: white; border-radius: 24px;
+            padding: 45px 20px; text-align: center; cursor: pointer;
+            transition: 0.2s; display: none;
+        }
+        .upload-box:hover { background: #eef8f1; transform: translateY(-2px); }
+        .upload-icon { font-size: 50px; margin-bottom: 15px; }
+        #fileInput { display: none; }
 
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
+        .editor {
+            display: none; margin-top: 30px; background: white; padding: 25px;
+            border-radius: 24px; box-shadow: 0 10px 35px rgba(0,0,0,0.07);
+        }
 
-jobs:
-  # Single deploy job since we're just deploying
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          # Upload entire repository
-          path: '.'
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v5
+        .preview-area {
+            display: flex; justify-content: center; margin-bottom: 25px; position: relative;
+        }
+
+        canvas {
+            width: min(360px, 80vw); height: min(360px, 80vw);
+            border-radius: 50%; border: 8px solid #16834b; background: #eee;
+        }
+
+        .logo-overlay {
+            position: absolute; bottom: 10px; right: 10px;
+            width: 70px; opacity: 0.9;
+        }
+
+        .frame-overlay {
+            position: absolute; inset: 0; pointer-events: none;
+            border-radius: 50%; border: 12px solid #1A4D2E;
+        }
+
+        .controls {
+            display: flex; gap: 10px; justify-content: center;
+            flex-wrap: wrap; margin-bottom: 20px;
+        }
+
+        .filter-btn {
+            border: none; background: #edf4ef; color: #145c37;
+            padding: 12px 20px; border-radius: 12px; cursor: pointer;
+            font-size: 15px; transition: 0.2s;
+        }
+        .filter-btn.active { background: #16834b; color: white; }
+
+        .actions {
+            display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+        }
+
+        .download-btn, .reset-btn, .share-btn {
+            border: none; padding: 14px 25px; border-radius: 13px;
+            font-size: 16px; cursor: pointer;
+        }
+        .download-btn { background: #16834b; color: white; }
+        .share-btn { background: #1A4D2E; color: white; }
+        .reset-btn { background: #eee; color: #333; }
+
+        footer { text-align: center; padding: 35px 20px; color: #708077; font-size: 14px; }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>خضّرها 🇸🇦</h1>
+    <p>خلّ صورتك خضراء بمناسبة اليوم الوطني 💚</p>
+</header>
+
+<main class="container">
+
+    <section class="landing" id="landing">
+        <h2>جاهزة تخضّرين صورتك؟ 💚</h2>
+        <p>أداة بسيطة وسريعة لتحويل صورتك إلى نسخة خضراء احتفالية بمناسبة اليوم الوطني السعودي.</p>
+        <button class="start-btn" id="startBtn">ابدئي الآن</button>
+    </section>
+
+    <label class="upload-box" for="fileInput" id="uploadBox">
+        <div class="upload-icon">📸</div>
+        <h2>ارفع صورتك</h2>
+        <p>اضغطي هنا لاختيار صورة من جهازك</p>
+        <input type="file" id="fileInput" accept="image/*">
+    </label>
+
+    <section class="editor" id="editor">
+
+        <div class="preview-area">
+            <canvas id="canvas" width="800" height="800"></canvas>
+
+            <div class="frame-overlay"></div>
+
+            <img class="logo-overlay"
+                 id="logoOverlay"
+                 src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Saudi_National_Day_Logo_2023.png/600px-Saudi_National_Day_Logo_2023.png">
+        </div>
+
+        <div class="controls">
+            <button class="filter-btn active" data-filter="normal">طبيعي</button>
+            <button class="filter-btn" data-filter="green">أخضر 🇸🇦</button>
+            <button class="filter-btn" data-filter="darkgreen">أخضر داكن</button>
+            <button class="filter-btn" data-filter="softgreen">أخضر ناعم</button>
+            <button class="filter-btn" data-filter="official">الهوية الرسمية</button>
+        </div>
+
+        <div class="actions">
+            <button class="download-btn" id="downloadBtn">تحميل الصورة 🇸🇦</button>
+            <button class="share-btn" id="shareBtn">مشاركة الصورة</button>
+            <button class="reset-btn" id="resetBtn">اختيار صورة ثانية</button>
+        </div>
+
+    </section>
+
+</main>
+
+<footer>
+    صُنع بحب بمناسبة اليوم الوطني السعودي 🇸🇦💚
+</footer>
+
+<script>
+
+    const startBtn = document.getElementById("startBtn");
+    const landing = document.getElementById("landing");
+    const uploadBox = document.getElementById("uploadBox");
+
+    startBtn.onclick = () => {
+        landing.style.display = "none";
+        uploadBox.style.display = "block";
+    };
+
+    const fileInput = document.getElementById("fileInput");
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    const editor = document.getElementById("editor");
+    const downloadBtn = document.getElementById("downloadBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const shareBtn = document.getElementById("shareBtn");
+    const filterButtons = document.querySelectorAll(".filter-btn");
+
+    let originalImage = null;
+    let currentFilter = "normal";
+
+    fileInput.addEventListener("change", function () {
+        const file = this.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function (event) {
+            const img = new Image();
+            img.onload = function () {
+                originalImage = img;
+                editor.style.display = "block";
+                drawImage();
+                editor.scrollIntoView({ behavior: "smooth" });
+            };
+            img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+
+    function drawImage() {
+        if (!originalImage) return;
+
+        const size = Math.min(originalImage.width, originalImage.height);
+        const sx = (originalImage.width - size) / 2;
+        const sy = (originalImage.height - size) / 2;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(originalImage, sx, sy, size, size, 0, 0, canvas.width, canvas.height);
+
+        let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        let pixels = imageData.data;
+
+        for (let i = 0; i < pixels.length; i += 4) {
+            let r = pixels[i];
+            let g = pixels[i + 1];
+            let b = pixels[i + 2];
+
+            if (currentFilter === "green") {
+                pixels[i] = r * 0.35;
+                pixels[i + 1] = g * 0.95 + 20;
+                pixels[i + 2] = b * 0.45;
+            }
+
+            else if (currentFilter === "darkgreen") {
+                pixels[i] = r * 0.18;
+                pixels[i + 1] = g * 0.75;
+                pixels[i + 2] = b * 0.25;
+            }
+
+            else if (currentFilter === "softgreen") {
+                pixels[i] = r * 0.55;
+                pixels[i + 1] = g * 0.9 + 10;
+                pixels[i + 2] = b * 0.65;
+            }
+
+            else if (currentFilter === "official") {
+                pixels[i] = r * 0.25;
+                pixels[i + 1] = g * 1.1;
+                pixels[i + 2] = b * 0.3;
+            }
+        }
+
+        ctx.putImageData(imageData, 0, 0);
+    }
+
+    filterButtons.forEach(button => {
+        button.addEventListener("click", function () {
+            filterButtons.forEach(btn => btn.classList.remove("active"));
+            this.classList.add("active");
+            currentFilter = this.dataset.filter;
+            drawImage();
+        });
+    });
+
+    downloadBtn.addEventListener("click", function () {
+        const link = document.createElement("a");
+        link.download = "green-profile-saudi-national-day.png";
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+    });
+
+    shareBtn.addEventListener("click", function () {
+        canvas.toBlob(blob => {
+            const file = new File([blob], "saudi-day.png", { type: "image/png" });
+
+            if (navigator.share) {
+                navigator.share({
+                    title: "اليوم الوطني السعودي",
+                    text: "صورتك الخضراء جاهزة 💚🇸🇦",
+                    files: [file]
+                });
+            } else {
+                alert("المشاركة غير مدعومة في هذا المتصفح");
+            }
+        });
+    });
+
+    resetBtn.addEventListener("click", function () {
+        originalImage = null;
+        editor.style.display = "none";
+        uploadBox.style.display = "block";
+    });
+
+</script>
+
+</body>
+</html>
